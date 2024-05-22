@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+</head>
+<body>
+    <h2>Welcome to the Landing Page</h2>
+    <ul id="userList"></ul>
+    <button onclick="navigateToForm()">Add Data</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+        import { getDatabase,push, ref, set, child, get, update, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
+
+        // Web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHeLt2FvXsRogZIcB6KB-iySFpHuIWu8k",
+            authDomain: "tasklab6-be56e.firebaseapp.com",
+            databaseURL: "https://tasklab6-be56e-default-rtdb.firebaseio.com",
+            projectId: "tasklab6-be56e",
+            storageBucket: "tasklab6-be56e.appspot.com",
+            messagingSenderId: "401177322798",
+            appId: "1:401177322798:web:249f8677c11033e04846bf"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const auth = getAuth(); // Initialize Firebase Authentication
+        const userList = document.querySelector('#userList');
+
+        // Function to fetch and display users
+        function displayUsers() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                userList.innerHTML = ''; // Clear previous list
+                snapshot.forEach((childSnapshot) => {
+                    const userData = childSnapshot.val();
+                    const li = document.createElement('li');
+                    li.textContent = `Name: ${userData.name}, Address: ${userData.address}, Phone: ${userData.phoneNumber}`;
+                    userList.appendChild(li);
+                });
+            });
+        }
+
+        // Call displayUsers initially and whenever data changes
+        displayUsers();
+
+        // Function to navigate to data entry form page
+        function navigateToForm() {
+            console.log('Redirecting to data entry form...');
+            window.location.href = 'dataentry.html';
+        }
+    </script>
+</body>
+</html>

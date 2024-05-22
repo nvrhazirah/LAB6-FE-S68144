@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .imageDivstyle {
+            width: 60px;
+            border: 1px gray solid;
+            padding: 5px;
+        }
+
+        .imgs {
+            height: 80px;
+            width: 100px;
+            border: 1px;
+            margin: 5px;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 610px;
+            border: gray 1px solid;
+            resize: none;
+            padding: 8px;
+        }
+
+        select {
+            width: 618px;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        .pointers {
+            border: 1px darkslateblue dashed;
+        }
+
+        #pdlab {
+            height: 100px;
+            vertical-align: top;
+        }
+
+        #addprodbtn,
+        #selimgsbtn {
+            float: right;
+            margin-left: 10px;
+        }
+
+        #controldiv {
+            width: 740px;
+        }
+
+        #loadlab {
+            width: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <label>Product Name</label><input type="text" id="nameinp"><br><br>
+    <label>Product Price</label><input type="text" id="priceinp"><br><br>
+    <label>Stock (Quantity)</label><input type="text" id="stockinp"><br><br>
+    <label>Category</label><br><br>
+    <select id="catinp">
+        <option value="Keyboard & Mouse">Keyboard & Mouse</option>
+        <option value="Laptops">Laptops</option>
+        <option value="Monitors">Monitors</option>
+        <option value="Graphics Card">Graphics Card</option>
+        <option value="Power Supply">Power Supply</option>
+    </select><br><br>
+    <label>Points #1</label> <input type="text" id="p1inp" class="pointers"><br><br>
+    <label>Points #2</label> <input type="text" id="p2inp" class="pointers"><br><br>
+    <label>Points #3</label> <input type="text" id="p3inp" class="pointers"><br><br>
+    <label>Points #4</label> <input type="text" id="p4inp" class="pointers"><br><br>
+
+    <label id="pdlab">Product Description</label> <textarea id="desarea"></textarea><br><br>
+
+    <div id="imageDiv"></div>
+
+    <div id="controldiv">
+        <label id='loadlab'>Uploading 1 of 3</label>
+        <button id="addprodbtn">Add Product</button>
+        <button id="selimgsbtn">Select Images</button>
+    </div>
+    <script type="module">
+        // Firebase config
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, child, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgL9Gice1uMbOUIvRFILyLQpiXfncnYLM",
+            authDomain: "firev9jsdb-39ec5.firebaseapp.com",
+            databaseURL: "https://firev9jsdb-39ec5-default-rtdb.firebaseio.com",
+            projectId: "firev9jsdb-39ec5",
+            storageBucket: "firev9jsdb-39ec5.appspot.com",
+            messagingSenderId: "976422152447",
+            appId: "1:976422152447:web:dd4d32edfc3061b18084ca"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const storage = getStorage(app);
+
+        // References
+        var files = [];
+        var FileReaders = [];
+        var ImageLinksArray = [];
+        const imgdiv = document.getElementById('imageDiv');
+        const selBtn = document.getElementById('selimgsbtn');
+        const addBtn = document.getElementById('addprodbtn');
+        const proglab = document.getElementById('loadlab');
+        const name = document.getElementById('nameinp');
+        const category = document.getElementById('catinp');
+        const description = document.getElementById('desarea');
+        const price = document.getElementById('priceinp');
+        const stock = document.getElementById('stockinp');
+
+        const p1 = document.getElementById('p1inp');
+        const p2 = document.getElementById('p2inp');
+        const p3 = document.getElementById('p3inp');
+        const p4 = document.getElementById('p4inp');
+
+        selBtn.addEventListener('click', OpenFileDialog);
+        addBtn.addEventListener('click', UploadAllImages);
+
+        function OpenFileDialog() {
+            let inp = document.createElement('input');
+            inp.type = 'file';
+            inp.multiple = 'multiple';
+
+            inp.onchange = (e) => {
+                AssignImgsToFilesArray(e.target.files);
+                CreateImgTags();
+            }
+
+            inp.click();
+        }
+
+        function AssignImgsToFilesArray(thefiles) {
+            let num = files.length + thefiles.length;
+            let looplim = (num <= 10) ? thefiles.length : (10 - files.length);
+            for (let i = 0; i < looplim; i++) {
+                files.push(thefiles[i]);
+            }
+            if (num > 10) alert("maximum 10 images are allowed!");
+        }
+
+        function CreateImgTags() {
+            imgdiv.innerHTML = '';
+            FileReaders = [];
+            for (let i = 0; i < files.length; i++) {
+                FileReaders[i] = new FileReader();
+                FileReaders[i].onload = function (e) {
+                    var img = document.createElement('img');
+                    img.id = 'imgNo' + i;
+                    img.classList.add('imgs');
+                    img.src = e.target.result;
+                    imgdiv.append(img);
+                }
+                FileReaders[i].readAsDataURL(files[i]);
+            }
+        }
+
+        function ClearImages() {
+            files = [];
+            ImageLinksArray = [];
+            imgdiv.innerHTML = '';
+            imgdiv.classList.remove('imageDivstyle');
+        }
+
+        function getShortTitle() {
+            let namey = name.value.substring
+                (0, 50);
+            return namey.replace(/[^a-zA-Z0-9]/g, "");
+        }
+
+        function GetImgUploadProgress() {
+            return 'Image Uploaded ' + ImageLinksArray.length + ' of ' + files.length;
+        }
+
+        function IsAllImagesUploaded() {
+            return ImageLinksArray.length === files.length;
+        }
+
+        function GetPoints() {
+            let points = [];
+            if (p1.value.length > 0) points.push(p1.value);
+            if (p2.value.length > 0) points.push(p2.value);
+            if (p3.value.length > 0) points.push(p3.value);
+            if (p4.value.length > 0) points.push(p4.value);
+            return points;
+        }
+
+        function RestoreBack() {
+            selBtn.disabled = false;
+            addBtn.disabled = false;
+        }
+
+        async function UploadAllImages() {
+            selBtn.disabled = true;
+            addBtn.disabled = true;
+
+            ImageLinksArray = [];
+            console.log("Starting image upload...");
+
+            for (let i = 0; i < files.length; i++) {
+                await UploadImage(files[i], i);
+            }
+
+            if (IsAllImagesUploaded()) {
+                proglab.innerHTML = "All images uploaded";
+                UploadAProduct();
+            }
+        }
+
+        async function UploadImage(imgToUpload, imgNo) {
+            const metadata = {
+                contentType: imgToUpload.type
+            };
+
+            const ImageAddress = "TheImage/" + getShortTitle() + "img#" + (imgNo + 1);
+
+            const storageRef = sRef(storage, ImageAddress);
+
+            const UploadTask = uploadBytesResumable(storageRef, imgToUpload, metadata);
+
+            return new Promise((resolve, reject) => {
+                UploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        proglab.innerHTML = 'Upload is ' + progress.toFixed(2) + '% done';
+                    },
+                    (error) => {
+                        console.error("Error: Image upload failed", error);
+                        reject(error);
+                    },
+                    () => {
+                        getDownloadURL(UploadTask.snapshot.ref).then((downloadURL) => {
+                            ImageLinksArray.push(downloadURL);
+                            console.log('Image uploaded: ', downloadURL);
+                            resolve();
+                        });
+                    }
+                );
+            });
+        }
+
+        function UploadAProduct() {
+            const productData = {
+                ProductTitle: name.value,
+                Category: category.value,
+                Description: description.value,
+                Price: price.value,
+                Stock: stock.value,
+                Points: GetPoints(),
+                LinksOfImagesArray: ImageLinksArray
+            };
+
+            set(ref(db, "TheProductRealdb/" + getShortTitle()), productData)
+                .then(() => {
+                    alert("Upload successful");
+                    RestoreBack();
+                })
+                .catch((error) => {
+                    console.error("Error: Product upload failed", error);
+                    RestoreBack();
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            margin: 0px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mb-5">
+        <h3>Sign Up</h3>
+
+        <input type="text" placeholder="Username" id="userInp" class="form-control mb-3">
+        <input type="password" placeholder="Password" id="passInp" class="form-control mb-3">
+        <div class="custom-control custom-switch mb-3">
+            <input type="checkbox" class="custom-control-input" id="customerSwitch1">
+            <label class="custom-control-label" for="customerSwitch1">Keep me Logged In</label>
+        </div>
+        <button type="button" id="sub_btn" class="btn btn-outline-primary mb-3">Sign Up</button>
+        <a href="register.html" class="badge badge-secondary py-1 w-100">Already Have an Account?</a>
+    </div>
+
+    <script type="module">
+        // Firebase config
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, child, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgL9Gice1uMbOUIvRFILyLQpiXfncnYLM",
+            authDomain: "firev9jsdb-39ec5.firebaseapp.com",
+            databaseURL: "https://firev9jsdb-39ec5-default-rtdb.firebaseio.com",
+            projectId: "firev9jsdb-39ec5",
+            storageBucket: "firev9jsdb-39ec5.appspot.com",
+            messagingSenderId: "976422152447",
+            appId: "1:976422152447:web:dd4d32edfc3061b18084ca"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+
+        // References
+        const username = document.getElementById('userInp');
+        const pass = document.getElementById('passInp');
+        const submit = document.getElementById('sub_btn');
+
+        // Authentication process
+        function AuthenticateUser() {
+            const dbref = ref(db);
+
+            get(child(dbref, "UserList/" + username.value)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    let dbpass = decPass(snapshot.val().password);
+                    if (dbpass == pass.value) {
+                        login(snapshot.val());
+                    } else {
+                        alert("Password is incorrect");
+                    }
+                } else {
+                    alert("User does not exist");
+                }
+            }).catch((error) => {
+                console.error(error);
+                alert("Error: " + error);
+            });
+        }
+
+        // Decrypt process
+        function decPass(dbpass) {
+            var bytes = CryptoJS.AES.decrypt(dbpass, pass.value);
+            return bytes.toString(CryptoJS.enc.Utf8);
+        }
+
+        // Login
+        function login(user) {
+            let keepLoggedIn = document.getElementById('customerSwitch1').checked;
+
+            if (!keepLoggedIn) {
+                sessionStorage.setItem('user', JSON.stringify(user));
+            } else {
+                localStorage.setItem('keepLoggedIn', 'yes');
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            window.location = "home.html";
+        }
+
+        // Assign events
+        submit.addEventListener('click', AuthenticateUser);
+    </script>
+
+</body>
+
+</html>

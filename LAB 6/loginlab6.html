@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" required><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+        import { getDatabase,push, ref, set, child, get, update, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
+
+        // Web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHeLt2FvXsRogZIcB6KB-iySFpHuIWu8k",
+            authDomain: "tasklab6-be56e.firebaseapp.com",
+            databaseURL: "https://tasklab6-be56e-default-rtdb.firebaseio.com",
+            projectId: "tasklab6-be56e",
+            storageBucket: "tasklab6-be56e.appspot.com",
+            messagingSenderId: "401177322798",
+            appId: "1:401177322798:web:249f8677c11033e04846bf"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const auth = getAuth(); // Initialize Firebase Authentication
+
+        const loginForm = document.querySelector('#loginForm');
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.querySelector('#email').value;
+    const password = document.querySelector('#password').value;
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert('Login successful!');
+        console.log('Redirecting to landing page...');
+        setTimeout(() => {
+            window.location.href = 'landingpage.html';
+        }, 1000); // Redirect after 1 second
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+    </script>
+</body>
+</html>

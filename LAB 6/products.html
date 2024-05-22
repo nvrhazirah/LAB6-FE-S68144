@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        #productsDiv {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .productcard {
+            border: 1px lightgray solid;
+            height: 530px;
+            width: 300px;
+            margin: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: column;
+            transition: border-color .3s;
+            padding: 10px;
+        }
+
+        .productcard:hover {
+            border-color: darkblue;
+        }
+
+        .thumb {
+            width: 220px;
+            height: 160px;
+            cursor: pointer;
+        }
+
+        .detbtns {
+            background-color: navy;
+            color: white;
+            width: 90%;
+            margin-bottom: 15px;
+        }
+
+        .detbtns:hover {
+            color: wheat;
+        }
+
+        .title {
+            color: darkblue;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            padding-left: 5px;
+            padding-right: 5px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .points {
+            align-self: flex-start;
+            word-wrap: break-word;
+            height: 192px;
+        }
+
+        @media screen and (max-width: 767px) {
+            #productsDiv {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="productsDiv" class="container">
+
+    </div>
+</body>
+
+<script type="module">
+    // Firebase config
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, child, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBgL9Gice1uMbOUIvRFILyLQpiXfncnYLM",
+        authDomain: "firev9jsdb-39ec5.firebaseapp.com",
+        databaseURL: "https://firev9jsdb-39ec5-default-rtdb.firebaseio.com",
+        projectId: "firev9jsdb-39ec5",
+        storageBucket: "firev9jsdb-39ec5.appspot.com",
+        messagingSenderId: "976422152447",
+        appId: "1:976422152447:web:dd4d32edfc3061b18084ca"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase();
+    const storage = getStorage(app);
+
+    var OuterDiv = document.getElementById('productsDiv');
+    var ArrayOfProducts = [];
+    window.addEventListener('load', GetAllProducts);
+
+    function GetAllProducts() {
+        const dbref = ref(db);
+        get(child(dbref, "TheProductRealdb"))
+            .then((snapshot) => {
+                snapshot.forEach(prod => {
+                    ArrayOfProducts.push(prod.val());
+                });
+                AddAllProducts();
+            });
+    }
+
+    function AddAllProducts() {
+        ArrayOfProducts.forEach((prod, index) => {
+            AddProduct(prod, index);
+        });
+        AssignAllEvents();
+    }
+
+    function AddProduct(product, index) {
+        let html = `
+            <img src="${product.LinksOfImagesArray[0]}" class="thumb mt-2" id="thumb-${index}">
+            <p class="title" id="title-${index}">${getShortTitle(product.ProductTitle)}</p>
+            ${GetUl(product.Points)}
+            ${GenerateStockLabel(product.Stock)}
+            <h5 class="price">RM ${product.Price}</h5>
+            <button class="detbtns btn" id="detbtn-${index}">View Details</button>
+        `;
+
+        let newProd = document.createElement('div');
+        newProd.classList.add('productcard');
+        newProd.innerHTML = html;
+        OuterDiv.append(newProd);
+    }
+
+    function getShortTitle(title) {
+        if (title.length > 49) title = title.substring(0, 47) + "..";
+        return title;
+    }
+
+    function GenerateStockLabel(stock) {
+        let stocklabel = document.createElement('h5');
+        stocklabel.classList.add('stock');
+
+        if (stock > 0) {
+            stocklabel.innerHTML = 'IN STOCK';
+            stocklabel.classList.add('text-success');
+        } else {
+            stocklabel.innerHTML = 'OUT OF STOCK';
+            stocklabel.classList.add('text-warning');
+        }
+        return stocklabel.outerHTML;
+    }
+
+    function GetUl(array) {
+        let ul = document.createElement('ul');
+        ul.classList.add('points');
+
+        array.forEach(element => {
+            let li = document.createElement('li');
+            li.innerText = element;
+            ul.append(li);
+        });
+        return ul.outerHTML;
+    }
+
+    function GetProductIndex(id) {
+        var indstart = id.indexOf('-') + 1;
+        var indend = id.length;
+        return Number(id.substring(indstart, indend));
+    }
+
+    function GotoProductDetails(event) {
+        var index = GetProductIndex(event.target.id);
+        localStorage.Product = JSON.stringify(ArrayOfProducts[index]);
+        window.location = "product-details.html";
+    }
+
+    function AssignAllEvents() {
+        var btns = document.getElementsByClassName('detbtns');
+        var titles = document.getElementsByClassName('title');
+        var thumbs = document.getElementsByClassName('thumb');
+        for (let i = 0; i < btns.length; i++) {
+            btns[i].addEventListener('click', GotoProductDetails);
+            titles[i].addEventListener('click', GotoProductDetails);
+            thumbs[i].addEventListener('click', GotoProductDetails);
+        }
+    }
+</script>
+
+</html>

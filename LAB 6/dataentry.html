@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Entry Form</title>
+</head>
+<body>
+    <h2>Data Entry Form</h2>
+    <form id="dataForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required><br>
+        <label for="address">Address:</label>
+        <input type="text" id="address" required><br>
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" required><br>
+        <button type="submit">Save Data</button>
+    </form>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+        import { getDatabase,push, ref, set, child, get, update, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
+
+        // Web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHeLt2FvXsRogZIcB6KB-iySFpHuIWu8k",
+            authDomain: "tasklab6-be56e.firebaseapp.com",
+            databaseURL: "https://tasklab6-be56e-default-rtdb.firebaseio.com",
+            projectId: "tasklab6-be56e",
+            storageBucket: "tasklab6-be56e.appspot.com",
+            messagingSenderId: "401177322798",
+            appId: "1:401177322798:web:249f8677c11033e04846bf"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const auth = getAuth(); // Initialize Firebase Authentication
+        const dataForm = document.querySelector('#dataForm');
+        dataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.querySelector('#name').value;
+            const address = document.querySelector('#address').value;
+            const phoneNumber = document.querySelector('#phoneNumber').value;
+
+            try {
+                await push(ref(db, 'users'), {
+                    name,
+                    address,
+                    phoneNumber
+                });
+                alert('Data saved successfully!');
+                dataForm.reset(); // Clear form after submission
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    </script>
+</body>
+</html>

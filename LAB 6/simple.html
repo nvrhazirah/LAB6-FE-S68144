@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAB 6</title>
+
+
+
+
+</head>
+<body>
+    <h2>Simple Input</h2>
+
+    <div class="row">
+        <form id="signupForm">
+            <h4>Enter ID</h4><input type="text" id="inputID" required>
+            <h4>Enter Name</h4><input type="text" id="inputName" required>
+            <h4>Enter Age</h4><input type="number" id="inputAge" required><br>
+            <button type="submit">Insert Data</button>
+        </form>
+    </div>
+
+    <h2>Delete Record</h2>
+
+    <div class="row">
+        <form id="deleteForm">
+            <h4>Enter ID to Delete</h4><input type="text" id="deleteID" required><br>
+            <button type="submit">Delete Data</button>
+        </form>
+    </div>
+<!----------------------------IMPORT+CONFIGURATIONS------------->
+
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  import { getDatabase, ref, set, child, get, update, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+
+  //  web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHeLt2FvXsRogZIcB6KB-iySFpHuIWu8k",
+    authDomain: "tasklab6-be56e.firebaseapp.com",
+    projectId: "tasklab6-be56e",
+    storageBucket: "tasklab6-be56e.appspot.com",
+    messagingSenderId: "401177322798",
+    appId: "1:401177322798:web:249f8677c11033e04846bf"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase();
+
+
+   // References
+   const inputID = document.querySelector("#inputID");
+        const inputName = document.querySelector("#inputName");
+        const inputAge = document.querySelector("#inputAge");
+        const deleteID = document.querySelector("#deleteID");
+
+        const signupForm = document.querySelector("#signupForm");
+        const deleteForm = document.querySelector("#deleteForm");
+
+        // Insert data function
+        function funInsertData(event) {
+            event.preventDefault();
+            set(ref(db, "people/" + inputID.value), {
+                name: inputName.value,
+                ID: inputID.value,
+                age: inputAge.value
+            })
+                .then(() => {
+                    alert("Data added successfully!");
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+        }
+         // Delete data function
+         function funDeleteData(event) {
+            event.preventDefault();
+            remove(ref(db, "people/" + deleteID.value))
+                .then(() => {
+                    alert("Data deleted successfully!");
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+        }
+
+        // Assign events to forms
+        signupForm.addEventListener('submit', funInsertData);
+        deleteForm.addEventListener('submit', funDeleteData);
+    </script>
+</body>
+
+</html>
